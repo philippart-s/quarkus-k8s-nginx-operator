@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nginx-operator
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-operator
+  namespace: nginx-operator
+spec:
+  selector:
+    matchLabels:
+      app: nginx-operator
+  replicas: 1 
+  strategy:
+    type: Recreate 
+  template:
+    metadata:
+      labels:
+        app: nginx-operator
+    spec:
+      containers:
+      - name: operator
+        image: localhost:5000/nginx-operator
+        imagePullPolicy: Always
+
