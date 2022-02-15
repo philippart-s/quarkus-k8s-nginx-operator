@@ -11,27 +11,26 @@ import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
 import io.fabric8.kubernetes.client.utils.Serialization;
-import io.javaoperatorsdk.operator.api.Context;
-import io.javaoperatorsdk.operator.api.Controller;
-import io.javaoperatorsdk.operator.api.DeleteControl;
-import io.javaoperatorsdk.operator.api.ResourceController;
-import io.javaoperatorsdk.operator.api.UpdateControl;
+import io.javaoperatorsdk.operator.api.reconciler.Context;
+import io.javaoperatorsdk.operator.api.reconciler.ControllerConfiguration;
+import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
+import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
+import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 
-@Controller
-public class NginxInstallerController implements ResourceController<NginxInstallerResource> {
+@ControllerConfiguration
+public class NginxInstallerReconciler implements Reconciler<NginxInstallerResource> {
   
     // K8S API utility
     private KubernetesClient k8sClient;
     // Watcher to do some actions when events occurs
     private Watch watch = null;
     
-    public NginxInstallerController(KubernetesClient k8sClient) {
+    public NginxInstallerReconciler(KubernetesClient k8sClient) {
         this.k8sClient = k8sClient;
     }
 
     @Override
-    public UpdateControl<NginxInstallerResource> createOrUpdateResource(NginxInstallerResource resource,
-            Context<NginxInstallerResource> context) {
+    public UpdateControl<NginxInstallerResource> reconcile(NginxInstallerResource resource, Context context) {
         System.out.println("🛠️  Create / update Nginx resource operator ! 🛠️");
 
         String namespace = resource.getMetadata().getNamespace();
@@ -69,11 +68,11 @@ public class NginxInstallerController implements ResourceController<NginxInstall
         Service service = loadYaml(Service.class, "/k8s/nginx-service.yml");
         k8sClient.services().inNamespace(namespace).createOrReplace(service);
 
-        return UpdateControl.updateCustomResource(resource);
+        return UpdateControl.updateResource(resource);
     }
 
     @Override
-    public DeleteControl deleteResource(NginxInstallerResource resource, Context<NginxInstallerResource> context) {
+    public DeleteControl cleanup(NginxInstallerResource resource, Context context) {
         System.out.println("💀 Delete Nginx resource operator ! 💀");
 
         // Avoid the automatic recreation
@@ -83,7 +82,7 @@ public class NginxInstallerController implements ResourceController<NginxInstall
         // Delete the service
         k8sClient.services().inNamespace((resource.getMetadata().getNamespace())).delete();
 
-        return ResourceController.super.deleteResource(resource, context);
+        return DeleteControl.defaultDelete();
     }
 
     /**

@@ -32,7 +32,7 @@
     <dependency>
       <groupId>io.quarkiverse.operatorsdk</groupId>
       <artifactId>quarkus-operator-sdk</artifactId>
-      <version>2.0.1</version>
+      <version>3.0.3</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
@@ -52,6 +52,17 @@
       <artifactId>rest-assured</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- Mandatory for k3s : see https://github.com/fabric8io/kubernetes-client/issues/1796 -->
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-ext-jdk15on</artifactId>
+			<version>1.70</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcpkix-jdk15on</artifactId>
+			<version>1.70</version>
+		</dependency>    
   </dependencies>
   <build>
     <plugins>
